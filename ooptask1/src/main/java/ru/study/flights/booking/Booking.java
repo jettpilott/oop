@@ -1,8 +1,11 @@
 package ru.study.flights.booking;
 
+import ru.study.flights.flight.Flight;
 import ru.study.flights.flight.Route;
+import ru.study.flights.exception.RouteException;
 import ru.study.flights.model.BookingId;
 
+import java.util.Collection;
 import java.util.Objects;
 
 /** Бронирование маршрута пассажиром. Равенство по идентификатору. */
@@ -21,6 +24,18 @@ public final class Booking {
         this.id = Objects.requireNonNull(id, "id");
         this.passenger = passenger;
         this.route = Objects.requireNonNull(route, "route");
+    }
+
+    private void requireActive() {
+        if (status == BookingStatus.CANCELLED) {
+            throw new IllegalStateException("Бронь " + id.value() + " уже отменена");
+        }
+    }
+
+    public void rebookCancelledSegment(int index, Collection<Flight> schedule) throws RouteException {
+        requireActive();
+        route = RebookingService.replaceCancelled(route, index, schedule);
+        status = BookingStatus.REBOOKED;
     }
 
     /** @return номер брони */
