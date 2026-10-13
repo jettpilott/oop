@@ -34,7 +34,6 @@ public enum CabinClass {
 
     /**
      * Цена билета этого класса.
-     *
      * @param baseKopecks базовая цена рейса в копейках
      * @return цена в копейках
      * @throws ArithmeticException при переполнении long
