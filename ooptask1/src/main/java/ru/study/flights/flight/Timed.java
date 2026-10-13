@@ -2,7 +2,6 @@ package ru.study.flights.flight;
 
 import java.time.Duration;
 import java.time.Instant;
-
 /**
  * всё, что имеет момент отправления и прибытия.
  */
