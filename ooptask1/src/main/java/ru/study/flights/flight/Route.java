@@ -95,6 +95,28 @@ public final class Route implements Timed {
         return segments.stream().mapToLong(Segment::priceKopecks).sum();
     }
 
+    /**
+     * Возвращает новый маршрут с заменённым сегментом; исходный не меняется.
+     *
+     * @param index       индекс заменяемого сегмента
+     * @param replacement новый сегмент между теми же аэропортами
+     * @return новый маршрут
+     * @throws RouteException если замена нарушает стыковки или меняет аэропорты
+     */
+    public Route withReplacement(int index, Segment replacement) throws RouteException {
+        Objects.checkIndex(index, segments.size());
+        Objects.requireNonNull(replacement, "replacement");
+        Segment old = segments.get(index);
+        if (!old.origin().equals(replacement.origin()) || !old.destination().equals(replacement.destination())) {
+            throw new RouteException(Reason.BROKEN_CHAIN,
+                    "Замена %s не соединяет %s и %s".formatted(replacement.flight().number(),
+                            old.origin(), old.destination()));
+        }
+        List<Segment> copy = new ArrayList<>(segments);
+        copy.set(index, replacement);
+        return of(copy, minConnection);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

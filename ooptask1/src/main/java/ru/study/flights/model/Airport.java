@@ -29,8 +29,6 @@ public final class Airport {
     }
 
     /**
-     * Удобная фабрика, принимающая пояс строкой, например {@code "Europe/Stockholm"}.
-     *
      * @param code   код IATA
      * @param city   город
      * @param zoneId идентификатор часового пояса

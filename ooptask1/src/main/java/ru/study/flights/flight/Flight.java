@@ -59,6 +59,7 @@ public record Flight(String number, Airport origin, Airport destination,
         }
     }
 
+
     /** @return момент вылета */
     @Override
     public Instant departure() {
