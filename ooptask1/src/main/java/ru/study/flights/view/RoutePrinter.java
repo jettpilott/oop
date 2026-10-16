@@ -23,11 +23,27 @@ public final class RoutePrinter {
         return "%dч %02dмин".formatted(d.toHours(), d.toMinutesPart());
     }
 
+    /**
+     * @param t рейс, сегмент или маршрут
+     * @return описание
+     */
+    public static String describe(Timed t) {
+        return switch (t) {
+            case Flight f -> "Рейс %s: %s -> %s, в пути %s"
+                    .formatted(f.number(), f.origin(), f.destination(), formatDuration(f.duration()));
+            case Segment s -> "Сегмент %s (%s), в пути %s"
+                    .formatted(s.flight().number(), s.cabin().title(), formatDuration(s.duration()));
+            case Route r -> "Маршрут из %d сегм., от вылета до прилёта %s"
+                    .formatted(r.segments().size(), formatDuration(r.duration()));
+            default -> throw new IllegalStateException("Unexpected value: " + t);
+        };
+    }
 
     /**
      * Печатает маршрут с местным временем, пометкой смены даты и пересадками.
      *
      * @param route маршрут
+     * @return многострочный текст
      */
     public static String format(Route route) {
         StringBuilder sb = new StringBuilder();
