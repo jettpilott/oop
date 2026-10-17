@@ -35,7 +35,6 @@ public final class RoutePrinter {
                     .formatted(s.flight().number(), s.cabin().title(), formatDuration(s.duration()));
             case Route r -> "Маршрут из %d сегм., от вылета до прилёта %s"
                     .formatted(r.segments().size(), formatDuration(r.duration()));
-            default -> throw new IllegalStateException("Unexpected value: " + t);
         };
     }
 

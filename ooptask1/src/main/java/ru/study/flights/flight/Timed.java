@@ -5,7 +5,7 @@ import java.time.Instant;
 /**
  * всё, что имеет момент отправления и прибытия.
  */
-public interface Timed {
+public sealed interface Timed permits Flight, Route, Segment {
 
     /** @return момент отправления */
     Instant departure();
