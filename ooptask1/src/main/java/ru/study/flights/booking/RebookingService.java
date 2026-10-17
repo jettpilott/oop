@@ -8,20 +8,25 @@ import java.util.Objects;
 
 import ru.study.flights.exception.*;
 
+
+import ru.study.flights.exception.RouteException;
+import ru.study.flights.exception.RouteException.Reason;
+
 import ru.study.flights.exception.RouteException.Reason;
 import ru.study.flights.flight.*;
 
 /** поиск замены отменённого сегмента с сохранением  стыковок. */
 public final class RebookingService {
-    private static final Comparator<Route> BEST =
-            Comparator.comparing(Route::arrival).thenComparingLong(Route::totalPriceKopecks);
+    /** Лучший кандидат: самый ранний прилёт заменяющего сегмента, при равенстве — самый дешёвый. */
+    private static final Comparator<Segment> BEST_SEGMENT =
+            Comparator.comparing(Segment::arrival).thenComparingLong(Segment::priceKopecks);
 
     private RebookingService() { }
 
     /**
-     * Ищет рейс, который заменит отменённый сегмент. Кандидат принимается, только если между теми же
-     * аэропортами и весь получившийся маршрут проходит проверку стыковок (в т. ч. со следующим сегментом).
-     * Из подходящих выбирается тот, что приводит к самому раннему прибытию, при равенстве — самый дешёвый.
+     * Ищет рейс, который заменит отменённый сегмент. Кандидат принимается, только если он соединяет
+     * те же аэропорты и весь получившийся маршрут проходит проверку стыковок (в том числе со следующим
+     * сегментом). Из подходящих выбирается рейс с самым ранним прилётом, при равенстве — самый дешёвый.
      *
      * @param route    исходный маршрут
      * @param index    индекс отменённого сегмента
@@ -36,7 +41,8 @@ public final class RebookingService {
         Objects.checkIndex(index, route.segments().size());
         Segment cancelled = route.segments().get(index);
 
-        Route best = null;
+        Route bestRoute = null;
+        Segment bestSegment = null;
         int rejected = 0;
         for (Flight candidate : schedule) {
             boolean sameLeg = candidate.origin().equals(cancelled.origin())
@@ -44,20 +50,22 @@ public final class RebookingService {
             if (!sameLeg || candidate.equals(cancelled.flight())) {
                 continue;
             }
+            Segment seg = new Segment(candidate, cancelled.cabin());
             try {
-                Route variant = route.withReplacement(index, new Segment(candidate, cancelled.cabin()));
-                if (best == null || BEST.compare(variant, best) < 0) {
-                    best = variant;
+                Route variant = route.withReplacement(index, seg);
+                if (bestSegment == null || BEST_SEGMENT.compare(seg, bestSegment) < 0) {
+                    bestRoute = variant;
+                    bestSegment = seg;
                 }
             } catch (RouteException e) {
-                rejected++;
+                rejected++;   // кандидат ломает стыковку — считаем и идём дальше
             }
         }
-        if (best == null) {
+        if (bestRoute == null) {
             throw new RouteException(Reason.NO_REPLACEMENT,
                     "Замены для %s нет (отклонено из-за стыковок: %d)"
                             .formatted(cancelled.flight().number(), rejected));
         }
-        return best;
+        return bestRoute;
     }
 }

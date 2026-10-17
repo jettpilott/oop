@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Objects;
 import ru.study.flights.exception.RouteException.Reason;
 import ru.study.flights.exception.RouteException;
+import ru.study.flights.view.RoutePrinter;
 
 /**
  * Неизменяемый маршрут из одного или нескольких сегментов с проверенными стыковками.
@@ -54,6 +55,12 @@ public final class Route implements Timed {
                 throw new RouteException(Reason.NEGATIVE_LAYOVER,
                         "%s вылетает раньше, чем прилетает %s"
                                 .formatted(next.flight().number(), prev.flight().number()));
+            }
+            if (layover.compareTo(minConnection) < 0) {          // <-- эта проверка
+                throw new RouteException(Reason.LAYOVER_TOO_SHORT,
+                        "Пересадка в %s: %s, а минимум %s"
+                                .formatted(prev.destination(), RoutePrinter.formatDuration(layover),
+                                        RoutePrinter.formatDuration(minConnection)));
             }
         }
         return new Route(copy, minConnection);

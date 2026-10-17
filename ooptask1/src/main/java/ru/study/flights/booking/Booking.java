@@ -63,4 +63,8 @@ public final class Booking {
         return o instanceof Booking b && id.equals(b.id);
     }
 
+    @Override
+    public int hashCode() {
+        return id.hashCode();
+    }
 }

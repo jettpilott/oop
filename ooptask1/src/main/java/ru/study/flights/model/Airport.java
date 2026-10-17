@@ -58,4 +58,10 @@ public final class Airport {
     public String toString() {
         return code;
     }
+
+    /** Согласован с {@link #equals(Object)}: считается только от кода. */
+    @Override
+    public int hashCode() {
+        return code.hashCode();
+    }
 }
