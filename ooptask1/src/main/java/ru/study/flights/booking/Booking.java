@@ -26,18 +26,6 @@ public final class Booking {
         this.route = Objects.requireNonNull(route, "route");
     }
 
-    private void requireActive() {
-        if (status == BookingStatus.CANCELLED) {
-            throw new IllegalStateException("Бронь " + id.value() + " уже отменена");
-        }
-    }
-
-    public void rebookCancelledSegment(int index, Collection<Flight> schedule) throws RouteException {
-        requireActive();
-        route = RebookingService.replaceCancelled(route, index, schedule);
-        status = BookingStatus.REBOOKED;
-    }
-
     /** @return номер брони */
     public BookingId id() { return id; }
 
@@ -54,7 +42,20 @@ public final class Booking {
      * Отменяет бронь.
      */
     public void cancel() {
+        requireActive();
         status = BookingStatus.CANCELLED;
+    }
+
+    public void rebookCancelledSegment(int index, Collection<Flight> schedule) throws RouteException {
+        requireActive();
+        route = RebookingService.replaceCancelled(route, index, schedule);
+        status = BookingStatus.REBOOKED;
+    }
+
+    private void requireActive() {
+        if (status == BookingStatus.CANCELLED) {
+            throw new IllegalStateException("Бронь " + id.value() + " уже отменена");
+        }
     }
 
     @Override
